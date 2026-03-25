@@ -1,0 +1,64 @@
+services:
+ frontend:
+  build:
+   context: ./fe-piptrek
+   dockerfile: Dockerfile
+  container_name: piptrek-frontend
+  ports:
+   - "3000:80"
+  depends_on:
+   - backend
+  restart: unless-stopped
+
+ backend:
+  build:
+   context: ./be-piptrek
+   dockerfile: Dockerfile
+  container_name: piptrek-backend
+  ports:
+   - "8000:80"
+  depends_on:
+   db:
+    condition: service_healthy
+  environment:
+   - APP_NAME=PipTrek
+   - APP_ENV=local
+   - APP_KEY=base64:CHANGE_ME_GENERATE_WITH_PHP_ARTISAN_KEY_GENERATE
+   - APP_DEBUG=true
+   - APP_URL=http://localhost:8000
+   - LOG_CHANNEL=stderr
+   - DB_CONNECTION=pgsql
+   - DB_HOST=db
+   - DB_PORT=5432
+   - DB_DATABASE=piptrek
+   - DB_USERNAME=piptrek
+   - DB_PASSWORD=piptrek_secret
+   - CACHE_STORE=file
+   - SESSION_DRIVER=file
+   - QUEUE_CONNECTION=sync
+   - JWT_SECRET=CHANGE_ME_GENERATE_WITH_PHP_ARTISAN_JWT_SECRET
+  volumes:
+   - backend-storage:/var/www/html/storage
+  restart: unless-stopped
+
+ db:
+  image: postgres:16-alpine
+  container_name: piptrek-db
+  ports:
+   - "5432:5432"
+  environment:
+   - POSTGRES_DB=piptrek
+   - POSTGRES_USER=piptrek
+   - POSTGRES_PASSWORD=piptrek_secret
+  volumes:
+   - db-data:/var/lib/postgresql/data
+  restart: unless-stopped
+  healthcheck:
+   test: ["CMD-SHELL", "pg_isready -U piptrek -d piptrek"]
+   interval: 5s
+   timeout: 5s
+   retries: 5
+
+volumes:
+ db-data:
+ backend-storage:
