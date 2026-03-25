@@ -16,7 +16,7 @@ services:
    dockerfile: Dockerfile
   container_name: piptrek-backend
   ports:
-   - "8000:80"
+   - "8080:80"
   depends_on:
    db:
     condition: service_healthy
@@ -45,7 +45,7 @@ services:
   image: postgres:16-alpine
   container_name: piptrek-db
   ports:
-   - "5432:5432"
+   - "5434:5434"
   environment:
    - POSTGRES_DB=piptrek
    - POSTGRES_USER=piptrek
